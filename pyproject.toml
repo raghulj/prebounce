@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "prebounce"
+version = "0.0.1"
+description = "Know before it bounces: self-contained email address verification for Python (pre-alpha, design stage)."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "Raghul Jagannathan" }]
+keywords = ["email", "verification", "smtp", "validation", "bounce"]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Communications :: Email",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dns = ["dnspython"]
+syntax = ["email-validator"]
+socks = ["python-socks"]
+dev = ["pytest", "ruff", "mypy"]
+
+# TODO: replace OWNER with the real GitHub account or organisation before publishing.
+[project.urls]
+Homepage = "https://github.com/OWNER/prebounce"
+Documentation = "https://github.com/OWNER/prebounce/tree/main/docs"
+Issues = "https://github.com/OWNER/prebounce/issues"
+Changelog = "https://github.com/OWNER/prebounce/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/prebounce"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.mypy]
+strict = true
+python_version = "3.10"
+files = ["src", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

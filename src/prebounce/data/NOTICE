@@ -1,0 +1,32 @@
+prebounce bundled data notice
+=============================
+
+Status: no data files are bundled yet. This notice describes the sources planned for the
+disposable-domain lists and the licence each one carries. Each list keeps its own licence; the
+MIT licence of prebounce code does not relabel it. When data files are added, the full licence
+text of each source will ship alongside them.
+
+1. disposable-email-domains/disposable-email-domains
+   https://github.com/disposable-email-domains/disposable-email-domains
+   Role: primary disposable-domain list.
+   Licence: CC0 1.0 Universal (public domain dedication).
+
+2. 7c/fakefilter
+   https://github.com/7c/fakefilter
+   Role: coverage list (first/last-seen metadata).
+   Licence: BSD-3-Clause. The copyright notice and licence text MUST be reproduced with any
+   redistributed data derived from it.
+
+3. disposable/disposable-email-domains
+   https://github.com/disposable/disposable-email-domains
+   Role: optional, opt-in "strict" list.
+   Licence: MIT. The copyright notice and licence text MUST be reproduced with any
+   redistributed data derived from it.
+
+4. amieiro/disposable-email-domains (allowDomains.txt only)
+   https://github.com/amieiro/disposable-email-domains
+   Role: allow list used to correct false positives in the lists above.
+   Licence: MIT. Same attribution requirement as above.
+
+Lists are snapshots. Content may change at any time upstream; refreshed copies are fetched by the
+host application at its own request (see docs/disposable-domains.md).
