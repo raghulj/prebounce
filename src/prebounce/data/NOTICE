@@ -30,3 +30,96 @@ text of each source will ship alongside them.
 
 Lists are snapshots. Content may change at any time upstream; refreshed copies are fetched by the
 host application at its own request (see docs/disposable-domains.md).
+
+
+===========================================================================================
+Bundled snapshots (downloaded 2026-09-29)
+===========================================================================================
+
+The status line above is superseded: the files below are now bundled. Each keeps the licence of
+its source; the MIT licence of prebounce code does not relabel them.
+
+disposable_primary.txt
+  Source:  https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/main/disposable_email_blocklist.conf
+  Licence: CC0 1.0 Universal (public domain dedication)
+  Downloaded: 2026-09-29
+  sha256:  b5493ea48624f28e09b2a25977c9319b78a6b59d59a017ff73b2aa6e5938e510
+
+disposable_fakefilter.txt
+  Source:  https://raw.githubusercontent.com/7c/fakefilter/main/txt/data.txt
+  Licence: BSD-3-Clause (text below)
+  Downloaded: 2026-09-29
+  sha256:  8da0ba433207fcc2d5090dc46b8438573ba24a9822e7d22a865b2d41b169ae16
+
+allow.txt
+  Source:  https://raw.githubusercontent.com/amieiro/disposable-email-domains/master/allowDomains.txt
+  Licence: MIT (declared in the repository README; the repository has no LICENSE file and names
+           no copyright holder, so the standard text is reproduced below under the author's
+           GitHub handle)
+  Downloaded: 2026-09-29
+  sha256:  4370158373a804a83687271fb349b7b8dbb96f3b37f7b5ae1ef2da796c7054d1
+
+free_providers.txt
+  Curated by the prebounce authors; released under the prebounce MIT licence.
+
+Files are kept exactly as downloaded; comments are stripped when they are loaded.
+
+-------------------------------------------------------------------------------------------
+BSD 3-Clause License (7c/fakefilter)
+-------------------------------------------------------------------------------------------
+
+BSD 3-Clause License
+
+Copyright (c) 2022, 7c
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+-------------------------------------------------------------------------------------------
+MIT License (amieiro/disposable-email-domains)
+-------------------------------------------------------------------------------------------
+
+MIT License
+
+Copyright (c) amieiro
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
