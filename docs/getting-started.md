@@ -25,7 +25,9 @@ print(result.verdict, result.send)
 Settings come from environment variables or are passed in explicitly:
 
 ```python
-verifier = Verifier(settings={"DNS_ENABLED": True})
+from prebounce import Settings
+
+verifier = Verifier(Settings(dns_enabled=True))
 ```
 
 Mailbox probing needs one of: direct SMTP, a SOCKS5 proxy pool, or a probe agent. Read
