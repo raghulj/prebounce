@@ -47,20 +47,20 @@ Details: [docs/pipeline.md](docs/pipeline.md).
 from prebounce import Verifier
 
 verifier = Verifier(
-    cache=my_cache,                # your Redis, memcached or in-memory wrapper
-    store=my_store,                # optional: persist final results
+    cache=my_cache,  # your Redis, memcached or in-memory wrapper
+    store=my_store,  # optional: persist final results
     rate_limiter=my_rate_limiter,  # optional: shared per-mail-server limits
-    on_result=log_result,          # optional: called with every result
+    on_result=log_result,  # optional: called with every result
 )
 
 result = verifier.verify("jane@example.com")
 
-result.verdict      # "deliverable" | "undeliverable" | "risky" | "unknown"
-result.send         # "safe_to_send" | "risky_to_send" | "do_not_send"
-result.confidence   # "high" | "medium" | "low"
-result.reasons      # e.g. ["mailbox_accepted"]
+result.verdict  # "deliverable" | "undeliverable" | "risky" | "unknown"
+result.send  # "safe_to_send" | "risky_to_send" | "do_not_send"
+result.confidence  # "high" | "medium" | "low"
+result.reasons  # e.g. ["mailbox_accepted"]
 
-if result.status == "pending":     # greylisted: your workers retry later
+if result.status == "pending":  # greylisted: your workers retry later
     schedule_retry(result.address, result.resume_token, delay=result.retry_after_seconds)
 ```
 

@@ -30,7 +30,7 @@ dependencies = []
 dns = ["dnspython"]
 syntax = ["email-validator"]
 socks = ["python-socks"]
-dev = ["pytest", "ruff", "mypy"]
+dev = ["pytest", "pytest-cov", "ruff", "mypy"]
 
 # TODO: replace OWNER with the real GitHub account or organisation before publishing.
 [project.urls]
