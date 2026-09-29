@@ -1,8 +1,13 @@
-# Configuration (planned)
+# Configuration
+
+All settings below are accepted and validated. Those for mailbox probing (`SMTP_*`, `PROBE_TIMEOUT`,
+`MAX_GREYLIST_ATTEMPTS`, `GREYLIST_DELAY_SECONDS`, `CATCH_ALL_CHECK`) have no effect until probing
+is implemented. `STRICT_DISPOSABLE` is accepted but not yet wired: a disposable domain is always
+treated as disposable. A `PROBE_AGENT_URL` setting does not exist yet.
 
 Settings are read with `Settings.from_env()` (variables carry the prefix `PREBOUNCE_`, for
 example `PREBOUNCE_DNS_ENABLED=true`) or built as `Settings(...)` and passed to
-`Verifier(settings=...)`. Invalid combinations raise `ConfigurationError`.
+`Verifier(settings)`. Invalid combinations raise `ConfigurationError`.
 
 | Setting | Effect |
 |---|---|
@@ -14,7 +19,7 @@ example `PREBOUNCE_DNS_ENABLED=true`) or built as `Settings(...)` and passed to
 | `MAX_GREYLIST_ATTEMPTS`, `GREYLIST_DELAY_SECONDS` | Greylist retry budget (default 3 attempts, 330 s) |
 | `BLOCKLIST_ZONES` | Comma-separated DNS blocklist zones (needs `DNS_ENABLED`) |
 | `CACHE_TTL` | JSON object overriding per-verdict TTLs in seconds: `deliverable`, `undeliverable`, `risky`, `unknown`, `domain` |
-| `STRICT_DISPOSABLE` | Treat unlisted-but-suspect domains as disposable |
+| `STRICT_DISPOSABLE` | Not yet wired. Intended: treat unlisted-but-suspect domains as disposable |
 | `CATCH_ALL_CHECK` | Also test a random address to detect accept-all domains |
 
 ## Host callbacks

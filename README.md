@@ -2,10 +2,10 @@
 
 **Know before it bounces.** A self-contained email address verification library for Python.
 
-> **Status: pre-alpha, design stage.** Nothing described below is implemented yet. There is no
-> release on PyPI, the API shown is a proposal and will change, and every feature is *planned*.
-> The repository currently contains the design documents and an empty package skeleton. See the
-> [roadmap](docs/roadmap.md).
+> **Status: pre-alpha.** The offline checks, DNS lookups, scoring and the `Verifier` API are
+> implemented and tested. Mailbox probing (the `smtp` package: reply handling, session, transports,
+> providers, proxies) is **not implemented yet**; keep `smtp_enabled` off. There is no release on
+> PyPI and the API may still change. See the [roadmap](docs/roadmap.md).
 
 ## Why
 
@@ -14,22 +14,26 @@ work, but they are separate products with their own limits and data flows. prebo
 be one function, `verify(address)`, installed with `pip` and running inside your own project, with
 your cache, database and background workers doing the heavy lifting.
 
-## Planned features
+## Features
 
-All planned, none implemented:
+Implemented:
 
 - Syntax check, including international addresses; normalisation
-- Disposable, role-address and free-mail detection; typo suggestions (`gmial.com` to `gmail.com`)
-- DNS checks: MX records, domains that accept no mail, optional blocklist lookups
-- SMTP mailbox probing that never sends `DATA`
-- Catch-all (accept-all) detection with a random-address probe
-- Greylisting handled as a `pending` result your workers retry
-- Provider rules (Gmail, Microsoft, Yahoo, security gateways) that report "unknown" rather than guess
-- Spam-trap *risk signals* (nobody can confirm a trap)
-- SOCKS5 proxy pools, or an optional probe agent, for hosts that block port 25
-- Typed result with verdict, send recommendation, confidence, reasons and raw evidence
+- Disposable, role-address and free-mail detection; typo suggestions (`gmial.com` to `gmail.com`);
+  gibberish score
+- Bundled disposable and allow lists, plus `refresh_domain_lists()` for host-scheduled refreshes
+- DNS checks: MX records, null MX, implicit MX fallback, optional blocklist lookups
+- Scoring into a typed result with verdict, send recommendation, confidence, reasons and flags
+- `Verifier`, `verify()` and `verify_many()`; `MemoryCache`; `Settings.from_env()`
 - Host-owned resources: cache, store, rate limiter and callbacks are supplied by you
 - Zero required dependencies; extras for DNS, syntax and SOCKS
+
+Not implemented yet (design only, see the linked docs):
+
+- SMTP mailbox probing that never sends `DATA`, catch-all detection, greylisting as a `pending`
+  result, provider rules ([smtp-probing](docs/smtp-probing.md))
+- SOCKS5 proxy pools or a probe agent ([proxies](docs/proxies.md))
+- Spam-trap *risk signals*
 
 ## How it works
 
@@ -41,28 +45,30 @@ no network probe:
 
 Details: [docs/pipeline.md](docs/pipeline.md).
 
-## Planned API (proposal)
+## Usage
 
 ```python
-from prebounce import Verifier
+from prebounce import MemoryCache, Verifier, verify
+
+result = verify("jane@example.com")  # offline checks only, default settings
 
 verifier = Verifier(
-    cache=my_cache,  # your Redis, memcached or in-memory wrapper
-    store=my_store,  # optional: persist final results
-    rate_limiter=my_rate_limiter,  # optional: shared per-mail-server limits
-    on_result=log_result,  # optional: called with every result
+    cache=MemoryCache(),  # or your Redis/memcached wrapper
+    on_result=print,  # optional: called with every result
 )
 
 result = verifier.verify("jane@example.com")
 
-result.verdict  # "deliverable" | "undeliverable" | "risky" | "unknown"
-result.send  # "safe_to_send" | "risky_to_send" | "do_not_send"
-result.confidence  # "high" | "medium" | "low"
-result.reasons  # e.g. ["mailbox_accepted"]
+result.verdict  # Verdict: deliverable | undeliverable | risky | unknown
+result.send  # SendRecommendation: safe_to_send | risky_to_send | do_not_send
+result.confidence  # Confidence: high | medium | low
+result.reasons  # tuple of Reason values
 
-if result.status == "pending":  # greylisted: your workers retry later
-    schedule_retry(result.address, result.resume_token, delay=result.retry_after_seconds)
+results = verifier.verify_many(["a@example.com", "b@example.org"])
 ```
+
+Greylisted results (`result.status == Status.pending`, resumed with
+`verify(..., resume_token=result.pending.to_token())`) only occur once mailbox probing exists.
 
 See [docs/results.md](docs/results.md) for the full result object.
 
@@ -70,14 +76,16 @@ See [docs/results.md](docs/results.md) for the full result object.
 
 The library owns logic only: no database, Redis connection, scheduler or workers. You pass small
 objects (`cache`, `store`, `rate_limiter`, `on_result`, `domain_lists`), and settings such as
-`DNS_ENABLED`, `SMTP_ENABLED`, `SMTP_PROXIES`, `PROBE_AGENT_URL` and `CATCH_ALL_CHECK` switch
-network features on. With no settings, only offline checks run. See
+`DNS_ENABLED`, `SMTP_ENABLED`, `SMTP_PROXIES` and `CATCH_ALL_CHECK` switch
+network features on (`DNS_ENABLED` works today; the `SMTP_*` and `CATCH_ALL_CHECK` settings only
+matter once probing exists; a probe agent setting does not exist yet). With no settings, only offline checks
+run. See
 [docs/configuration.md](docs/configuration.md).
 
 ## Probe IP addresses and proxies
 
 Mail servers judge the IP address that probes them, and many hosts block port 25. The planned
-answer is a SOCKS5 proxy pool (or an optional probe agent) so your application's own IP is never
+answer (not implemented yet) is a SOCKS5 proxy pool (or an optional probe agent) so your application's own IP is never
 the one seen. See [docs/proxies.md](docs/proxies.md) and
 [docs/responsible-use.md](docs/responsible-use.md).
 
@@ -92,12 +100,12 @@ the one seen. See [docs/proxies.md](docs/proxies.md) and
 
 ## Roadmap
 
-v0.1 offline checks, v0.2 DNS, v0.3 SMTP probing, v0.4 proxies and probe agent, v0.5 disposable
-list refresh, v1.0 stable API. Details in [docs/roadmap.md](docs/roadmap.md).
+v0.1 offline checks, v0.2 DNS and v0.5 list refresh are implemented in the source tree (unreleased);
+v0.3 SMTP probing and v0.4 proxies and probe agent are not started; v1.0 stable API. Details in [docs/roadmap.md](docs/roadmap.md).
 
 ## Contributing
 
-Design review is the most valuable contribution at this stage. See [CONTRIBUTING.md](CONTRIBUTING.md)
+Design review and bug reports are the most valuable contributions at this stage. See [CONTRIBUTING.md](CONTRIBUTING.md)
 and the [Code of Conduct](CODE_OF_CONDUCT.md). Report vulnerabilities per [SECURITY.md](SECURITY.md).
 
 ## Licence

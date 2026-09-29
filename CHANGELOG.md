@@ -7,6 +7,18 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
-- Initial project scaffold (package metadata, tests skeleton, tooling configuration).
-- Design documentation for the planned verification pipeline, SMTP probing, proxies,
-  disposable-domain lists and host integration. No verification features are implemented yet.
+- Project scaffold (package metadata, tooling configuration) and design documentation.
+- Address syntax checking (international addresses) and normalisation.
+- Role-address, free-mail, typo-suggestion and gibberish detection.
+- Bundled disposable and allow lists, with `refresh_domain_lists()` and
+  `DisposableLists.load_refreshed()`.
+- DNS lookup: MX, null MX, implicit MX fallback and optional blocklist checks.
+- Scoring into verdict, send recommendation, confidence and reasons.
+- `Verifier`, `verify()` and `verify_many()`; typed `Result` with `to_dict()`/`from_dict()`.
+- `MemoryCache` and `Settings.from_env()`.
+- Continuous integration workflow (lint, format, strict typing, tests on Python 3.10-3.13).
+
+### Known limitations
+- Mailbox probing (SMTP replies, session, transports, providers, proxies) is not implemented;
+  leave `smtp_enabled` off.
+- `strict_disposable` is accepted but not yet wired.

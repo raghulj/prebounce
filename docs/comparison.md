@@ -1,6 +1,6 @@
 # Comparison
 
-Neutral feature comparison. The first column is the **plan**, not a shipped product. Cells are
+Neutral feature comparison. The first column is the plan plus what is implemented so far (offline checks, DNS, scoring); mailbox probing is not implemented yet. Cells are
 based on public documentation as we read it; `?` means not confirmed. Please open an issue to
 correct anything.
 

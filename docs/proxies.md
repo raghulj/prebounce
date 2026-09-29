@@ -1,4 +1,6 @@
-# Probe IP addresses and proxies (planned)
+# Probe IP addresses and proxies
+
+> Not implemented yet. This page describes the planned design.
 
 The mail server being probed judges one IP address. That should not be your application's IP, so
 a block or blocklisting cannot affect your own mail or reputation. Many hosts also block port 25

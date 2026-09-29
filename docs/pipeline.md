@@ -1,4 +1,7 @@
-# The verification pipeline (planned)
+# The verification pipeline
+
+Stages 1-5, 8 and 9 are implemented. Stages 6 and 7 (mailbox probe, read replies) are not
+implemented yet: the probe raises `NotImplementedError`, so leave `smtp_enabled` off.
 
 Every address passes through the same nine stages in order. A stage may stop early with a firm
 answer, so bad addresses never cost a network probe.
@@ -17,7 +20,8 @@ answer, so bad addresses never cost a network probe.
 
 ## Illustrative traces
 
-These are examples of intended behaviour, not recorded output.
+These are examples, not recorded output. Traces involving a probe (accept-all, greylisting,
+provider answers) describe planned behaviour that is not implemented yet.
 
 - `temp@mailinator.com`: stage 3 finds a disposable domain and stops. Undeliverable, do not send, no network.
 - `bob@@example.com`: stage 2 stops on a second `@`.

@@ -1,4 +1,6 @@
-# SMTP probing (planned)
+# SMTP probing
+
+> Not implemented yet. This page describes the planned design.
 
 The library connects to the recipient's mail server as a sender would, asks whether it would
 accept mail for the address, and disconnects **before any message is sent**. `DATA` is never issued.

@@ -1,4 +1,9 @@
-# Results (planned)
+# Results
+
+Everything except probe-derived data is implemented. `probe`, `catch_all`, `pending` and the
+reasons that come from a mailbox probe (`mailbox_accepted`, `accept_all`, `greylisted`,
+`mailbox_full`, `prober_blocked`, ...) exist as types but are not produced until probing is
+implemented.
 
 `verify()` returns a typed, immutable result object. Types live in `prebounce.types`; `Result.to_dict()` / `Result.from_dict()` round-trip through JSON.
 

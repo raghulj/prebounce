@@ -1,6 +1,7 @@
-# Getting started (planned)
+# Getting started
 
-> Nothing here works yet; this is the intended experience. There is no PyPI release.
+> Pre-alpha, no PyPI release yet: install from a source checkout (`pip install -e .`). Only
+> offline checks and DNS lookups work; mailbox probing is not implemented yet.
 
 ## Install
 
@@ -22,19 +23,20 @@ print(result.verdict, result.send)
 
 ## Turn on network features
 
-Settings come from environment variables or are passed in explicitly:
+Settings come from `Settings.from_env()` (variables prefixed `PREBOUNCE_`) or are passed in
+explicitly. DNS lookups need the `dns` extra:
 
 ```python
-from prebounce import Settings
+from prebounce import Settings, Verifier
 
 verifier = Verifier(Settings(dns_enabled=True))
 ```
 
-Mailbox probing needs one of: direct SMTP, a SOCKS5 proxy pool, or a probe agent. Read
-[responsible use](responsible-use.md) and [proxies](proxies.md) first.
+Mailbox probing is not implemented yet: do not set `smtp_enabled`, the probe raises
+`NotImplementedError`. See [responsible use](responsible-use.md).
 
 ## Plug into your project
 
 Pass a cache and a rate limiter so results and per-server limits are shared across workers; see
-[configuration](configuration.md). Run `verify()` inside a background task, never in a web request:
-a probe can take several seconds.
+[configuration](configuration.md). Once probing exists, run `verify()` in a background task, not a web request: a probe can take
+several seconds.
