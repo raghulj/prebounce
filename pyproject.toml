@@ -32,12 +32,11 @@ syntax = ["email-validator"]
 socks = ["python-socks"]
 dev = ["pytest", "pytest-cov", "ruff", "mypy"]
 
-# TODO: replace OWNER with the real GitHub account or organisation before publishing.
 [project.urls]
-Homepage = "https://github.com/OWNER/prebounce"
-Documentation = "https://github.com/OWNER/prebounce/tree/main/docs"
-Issues = "https://github.com/OWNER/prebounce/issues"
-Changelog = "https://github.com/OWNER/prebounce/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/raghulj/prebounce"
+Documentation = "https://github.com/raghulj/prebounce/tree/main/docs"
+Issues = "https://github.com/raghulj/prebounce/issues"
+Changelog = "https://github.com/raghulj/prebounce/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/prebounce"]
