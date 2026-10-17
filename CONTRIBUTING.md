@@ -1,7 +1,7 @@
 # Contributing to prebounce
 
-prebounce is at the design stage. The most useful contributions right now are review of the
-documents in [`docs/`](docs/index.md): wrong assumptions, missing edge cases, better naming.
+prebounce is pre-alpha. The most useful contributions right now are bug reports and review of
+the documents in [`docs/`](docs/index.md): wrong assumptions, missing edge cases, better naming.
 Open an issue before starting any implementation work so effort is not duplicated.
 
 ## Ground rules

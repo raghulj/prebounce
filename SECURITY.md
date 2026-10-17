@@ -1,7 +1,6 @@
 # Security policy
 
-prebounce is pre-alpha and has no released functionality yet, but please report vulnerabilities
-in the design or the code responsibly.
+prebounce is pre-alpha. Please report vulnerabilities in the design or the code responsibly.
 
 ## Reporting
 

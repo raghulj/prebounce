@@ -1,4 +1,4 @@
-"""prebounce: email address verification for Python (pre-alpha, design stage)."""
+"""prebounce: email address verification for Python (pre-alpha)."""
 
 from prebounce.cache import MemoryCache
 from prebounce.errors import (
@@ -38,7 +38,7 @@ from prebounce.types import (
 )
 from prebounce.verifier import Verifier, verify
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 
 __all__ = [
     "Cache",

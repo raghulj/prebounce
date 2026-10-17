@@ -1,7 +1,6 @@
 # Getting started
 
-> Pre-alpha, no PyPI release yet: install from a source checkout (`pip install -e .`). Only
-> offline checks and DNS lookups work; mailbox probing is not implemented yet.
+> Pre-alpha (0.1.0). Only offline checks and DNS lookups work; mailbox probing is not implemented yet.
 
 ## Install
 

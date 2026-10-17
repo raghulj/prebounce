@@ -4,8 +4,8 @@
 
 > **Status: pre-alpha.** The offline checks, DNS lookups, scoring and the `Verifier` API are
 > implemented and tested. Mailbox probing (the `smtp` package: reply handling, session, transports,
-> providers, proxies) is **not implemented yet**; keep `smtp_enabled` off. There is no release on
-> PyPI and the API may still change. See the [roadmap](docs/roadmap.md).
+> providers, proxies) is **not implemented yet**; keep `smtp_enabled` off. Released on PyPI as
+> `prebounce` 0.1.0; the API may still change. See the [roadmap](docs/roadmap.md).
 
 ## Why
 
@@ -100,7 +100,7 @@ the one seen. See [docs/proxies.md](docs/proxies.md) and
 
 ## Roadmap
 
-v0.1 offline checks, v0.2 DNS and v0.5 list refresh are implemented in the source tree (unreleased);
+v0.1 offline checks, v0.2 DNS and v0.5 list refresh are released in 0.1.0;
 v0.3 SMTP probing and v0.4 proxies and probe agent are not started; v1.0 stable API. Details in [docs/roadmap.md](docs/roadmap.md).
 
 ## Contributing

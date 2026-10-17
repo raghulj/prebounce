@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-17
+
+First release.
+
 ### Added
 - Project scaffold (package metadata, tooling configuration) and design documentation.
 - Address syntax checking (international addresses) and normalisation.
@@ -24,3 +28,6 @@ All notable changes to this project are documented here. The format follows
 ### Known limitations
 - Mailbox probing (SMTP replies, session, transports, providers, proxies) is not implemented;
   leave `smtp_enabled` off.
+
+[Unreleased]: https://github.com/raghulj/prebounce/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/raghulj/prebounce/releases/tag/v0.1.0
