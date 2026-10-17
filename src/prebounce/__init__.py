@@ -18,6 +18,7 @@ from prebounce.protocols import (
     Resolver,
     SmtpTransport,
     Store,
+    StrictDomainLists,
 )
 from prebounce.settings import ProxyConfig, Settings
 from prebounce.types import (
@@ -68,6 +69,7 @@ __all__ = [
     "SmtpTransport",
     "Status",
     "Store",
+    "StrictDomainLists",
     "TransportError",
     "Verdict",
     "Verifier",

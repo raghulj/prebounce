@@ -111,7 +111,7 @@ def score(
     probe_reason: Reason | None,
     provider_reliability: str | None,
     suggestion: str | None,
-    strict_disposable: bool,
+    strict_match: bool = False,
 ) -> tuple[Verdict, SendRecommendation, Confidence, tuple[Reason, ...]]:
     """Combine evidence. Pure function.
 
@@ -121,8 +121,8 @@ def score(
 
     Precedence: syntax, disposable, domain lookup, blocklist, typo, probe, then the no-probe
     fallback. Role and gibberish flags add reasons and lower safe_to_send to risky_to_send.
-    strict_disposable is accepted for signature stability; a disposable domain is always
-    undeliverable.
+    A disposable domain is always undeliverable. strict_match means only the opt-in strict list
+    flagged it; that list has more false positives, so confidence drops to medium.
     """
     if syntax:
         return Verdict.undeliverable, _DO_NOT_SEND, Confidence.high, _dedupe(list(syntax))
@@ -130,7 +130,7 @@ def score(
         return (
             Verdict.undeliverable,
             _DO_NOT_SEND,
-            Confidence.high,
+            Confidence.medium if strict_match else Confidence.high,
             (Reason.disposable_domain,),
         )
     if domain is not None:

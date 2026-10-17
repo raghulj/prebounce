@@ -59,6 +59,13 @@ allow.txt
   Downloaded: 2026-09-29
   sha256:  4370158373a804a83687271fb349b7b8dbb96f3b37f7b5ae1ef2da796c7054d1
 
+disposable_strict.txt
+  Source:  https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.txt
+  Licence: MIT (text below)
+  Downloaded: 2026-10-09
+  sha256:  4817d2bfbd1e094f7012ea030dc20d96278ed8257f7413fa674b9a0f7f20e29d
+  Used only when strict_disposable is on.
+
 free_providers.txt
   Curated by the prebounce authors; released under the prebounce MIT licence.
 
@@ -105,6 +112,33 @@ MIT License (amieiro/disposable-email-domains)
 MIT License
 
 Copyright (c) amieiro
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-------------------------------------------------------------------------------------------
+MIT License (disposable/disposable-email-domains)
+-------------------------------------------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2017 Andrei Simionescu
+Copyright (c) 2017 Stefan Meinecke, greenSec GmbH
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

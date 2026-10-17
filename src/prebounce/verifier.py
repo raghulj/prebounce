@@ -15,6 +15,7 @@ from prebounce.lists import (
     gibberish_score,
     is_free_provider,
     is_role,
+    match_disposable,
     suggest_domain,
 )
 from prebounce.protocols import (
@@ -58,21 +59,11 @@ def _default_transport_factory(proxy: ProxyConfig | None) -> SmtpTransport:
     return SocksTransport(proxy.url) if proxy is not None else SocketTransport()
 
 
-def _in_lists(lists: DomainLists, domain: str) -> bool:
-    """True if domain or a parent domain is disposable and no allow entry covers it."""
-    labels = domain.lower().rstrip(".").split(".")
-    chain = [".".join(labels[i:]) for i in range(max(1, len(labels) - 1))]
-    allow = lists.allow()
-    if any(name in allow for name in chain):
-        return False
-    disposable = lists.disposable()
-    return any(name in disposable for name in chain)
-
-
 class Verifier:
     """Runs syntax, list, DNS and SMTP stages according to settings.
 
-    Defaults: Settings() (offline), MemoryCache, bundled lists, dnspython resolver and socket/SOCKS
+    Defaults: Settings() (offline), MemoryCache, bundled lists (with the strict list when
+    settings.strict_disposable is on), dnspython resolver and socket/SOCKS
     transports built lazily only when the corresponding stage is enabled.
 
     Exceptions raised by the host's cache, store or on_result callbacks propagate to the caller of
@@ -98,7 +89,9 @@ class Verifier:
         self.rate_limiter = rate_limiter
         self.on_result = on_result
         self.domain_lists: DomainLists = (
-            domain_lists if domain_lists is not None else DisposableLists.load_bundled()
+            domain_lists
+            if domain_lists is not None
+            else DisposableLists.load_bundled(strict=self.settings.strict_disposable)
         )
         self.resolver = resolver
         self.transport_factory = transport_factory
@@ -155,7 +148,10 @@ class Verifier:
         if syntax:
             return self._build(address, normalized, "local", Flags(), None, None, syntax=syntax)
 
-        disposable = _in_lists(self.domain_lists, domain_name)
+        match = match_disposable(
+            self.domain_lists, domain_name, strict=self.settings.strict_disposable
+        )
+        disposable = match is not None
         suggested = suggest_domain(domain_name)
         suggestion = f"{local}@{suggested}" if suggested is not None else None
         flags = Flags(
@@ -165,7 +161,9 @@ class Verifier:
             gibberish=gibberish_score(local) >= _GIBBERISH_THRESHOLD,
         )
         if disposable:
-            return self._build(address, normalized, "local", flags, None, None)
+            return self._build(
+                address, normalized, "local", flags, None, None, strict_match=match == "strict"
+            )
 
         key = _CACHE_KEY_PREFIX + normalized.lower()
         if pending is None:
@@ -259,6 +257,7 @@ class Verifier:
         provider: str | None = None,
         pending: PendingState | None = None,
         extra: tuple[Reason, ...] = (),
+        strict_match: bool = False,
     ) -> Result:
         verdict, send, confidence, reasons = score(
             syntax,
@@ -268,7 +267,7 @@ class Verifier:
             probe_reason,
             reliability,
             suggestion,
-            self.settings.strict_disposable,
+            strict_match,
         )
         if pending is not None:
             verdict, send, confidence = (

@@ -293,10 +293,12 @@ def test_score(kwargs: dict[str, Any], expected: tuple[V, S, C, tuple[R, ...]]) 
     assert run(**kwargs) == expected
 
 
-def test_strict_disposable_does_not_change_outcome() -> None:
+def test_strict_only_match_lowers_confidence() -> None:
     flags = Flags(disposable=True)
+    core = score((), flags, None, None, None, None, None, False)
     strict = score((), flags, None, None, None, None, None, True)
-    assert strict == score((), flags, None, None, None, None, None, False)
+    assert core == (V.undeliverable, S.do_not_send, C.high, (R.disposable_domain,))
+    assert strict == (V.undeliverable, S.do_not_send, C.medium, (R.disposable_domain,))
 
 
 def test_reasons_are_deduplicated_and_deterministic() -> None:

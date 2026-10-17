@@ -14,6 +14,7 @@ from prebounce.errors import DNSTimeout, NXDomain, PrebounceError
 from prebounce.lists import DisposableLists
 from prebounce.settings import Settings
 from prebounce.types import (
+    Confidence,
     DomainInfo,
     MxRecord,
     PendingState,
@@ -123,6 +124,32 @@ def test_custom_domain_lists_and_allow_override() -> None:
     assert v.verify("a@burner.test").flags.disposable
     assert v.verify("a@sub.burner.test").flags.disposable
     assert not v.verify("a@ok.burner.test").flags.disposable
+
+
+def test_strict_disposable_off_ignores_strict_list() -> None:
+    lists = DisposableLists(strict=["burner.test"])
+    r = Verifier(domain_lists=lists).verify("a@burner.test")
+    assert not r.flags.disposable
+    assert r.verdict is Verdict.unknown
+
+
+def test_strict_disposable_on_flags_with_medium_confidence() -> None:
+    lists = DisposableLists(disposable=["core.test"], strict=["burner.test"])
+    v = Verifier(Settings(strict_disposable=True), domain_lists=lists)
+    r = v.verify("a@burner.test")
+    assert r.flags.disposable and r.reasons == (Reason.disposable_domain,)
+    assert (r.verdict, r.send, r.confidence) == (
+        Verdict.undeliverable,
+        SendRecommendation.do_not_send,
+        Confidence.medium,
+    )
+    assert v.verify("a@core.test").confidence is Confidence.high
+
+
+def test_strict_disposable_default_lists_include_bundled_strict() -> None:
+    assert not Verifier().verify("a@ubermail39.info").flags.disposable
+    r = Verifier(Settings(strict_disposable=True)).verify("a@ubermail39.info")
+    assert r.flags.disposable and r.confidence is Confidence.medium
 
 
 def test_offline_flags_and_typo() -> None:

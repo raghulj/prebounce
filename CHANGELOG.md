@@ -16,9 +16,11 @@ All notable changes to this project are documented here. The format follows
 - Scoring into verdict, send recommendation, confidence and reasons.
 - `Verifier`, `verify()` and `verify_many()`; typed `Result` with `to_dict()`/`from_dict()`.
 - `MemoryCache` and `Settings.from_env()`.
+- `strict_disposable`: opt-in strict list (disposable/disposable-email-domains), bundled and
+  refreshable with `refresh_domain_lists(..., strict=True)`; strict-only matches score `medium`
+  confidence. `StrictDomainLists` protocol and `match_disposable()`.
 - Continuous integration workflow (lint, format, strict typing, tests on Python 3.10-3.13).
 
 ### Known limitations
 - Mailbox probing (SMTP replies, session, transports, providers, proxies) is not implemented;
   leave `smtp_enabled` off.
-- `strict_disposable` is accepted but not yet wired.

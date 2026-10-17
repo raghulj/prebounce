@@ -7,10 +7,14 @@ shortest match ever attempted; ``co.uk`` style suffixes are never matched by a t
 name. An allow entry on the domain or any of the parents wins over a disposable entry, and a
 free provider domain is never disposable.
 
+The strict list (disposable/disposable-email-domains) is much larger and has more false positives.
+It is kept apart from the core lists, loaded only on request and consulted only when the host
+turns on ``strict_disposable``.
+
 Refresh storage (see refresh_domain_lists): every key is prefixed ``prebounce:lists:v1:``.
 ``source:<name>`` holds ``{"domains": [...], "count": n, "fetched_at": iso}`` for each accepted
-upstream source, ``disposable`` and ``allow`` hold ``{"domains": [...]}`` for the merged result.
-All are stored with a 90 day TTL.
+upstream source, ``disposable``, ``allow`` and (when refreshed with strict=True) ``strict`` hold
+``{"domains": [...]}`` for the merged result. All are stored with a 90 day TTL.
 """
 
 from __future__ import annotations
@@ -24,11 +28,12 @@ from datetime import datetime, timezone
 from functools import lru_cache
 from importlib import resources
 
-from prebounce.protocols import Cache
+from prebounce.protocols import Cache, DomainLists, StrictDomainLists
 
 _KEY_PREFIX = "prebounce:lists:v1:"
 _KEY_DISPOSABLE = _KEY_PREFIX + "disposable"
 _KEY_ALLOW = _KEY_PREFIX + "allow"
+_KEY_STRICT = _KEY_PREFIX + "strict"
 _STORE_TTL = 90 * 86400
 _MAX_SHRINK_RATIO = 0.5
 _MAX_INVALID_RATIO = 0.01
@@ -50,6 +55,11 @@ _SOURCES: tuple[tuple[str, str, str], ...] = (
         "https://raw.githubusercontent.com/amieiro/disposable-email-domains/master/"
         "allowDomains.txt",
         "allow",
+    ),
+    (
+        "strict",
+        "https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.txt",
+        "strict",
     ),
 )
 
@@ -391,27 +401,37 @@ def gibberish_score(local: str) -> float:
 
 
 class DisposableLists:
-    """Disposable and allow lists; implements the DomainLists protocol."""
+    """Disposable, allow and strict lists; implements the StrictDomainLists protocol."""
 
-    def __init__(self, disposable: Iterable[str] = (), allow: Iterable[str] = ()) -> None:
+    def __init__(
+        self,
+        disposable: Iterable[str] = (),
+        allow: Iterable[str] = (),
+        strict: Iterable[str] = (),
+    ) -> None:
         """Start from the given sets (not the bundle); use load_bundled for the snapshot."""
         self._raw_disposable = _clean_all(disposable)
+        self._raw_strict = _clean_all(strict)
         self._allow = _clean_all(allow)
         self._disposable = self._raw_disposable - self._allow - _free_providers()
+        self._strict = self._raw_strict - self._disposable - self._allow - _free_providers()
 
     @classmethod
-    def load_bundled(cls) -> DisposableLists:
-        """Load the snapshot shipped in prebounce/data."""
+    def load_bundled(cls, *, strict: bool = False) -> DisposableLists:
+        """Load the snapshot shipped in prebounce/data; the strict list only when asked."""
         disposable = _parse_domains(_read_data("disposable_primary.txt"))
         disposable += _parse_domains(_read_data("disposable_fakefilter.txt"))
-        return cls(disposable, _parse_domains(_read_data("allow.txt")))
+        extra = _parse_domains(_read_data("disposable_strict.txt")) if strict else []
+        return cls(disposable, _parse_domains(_read_data("allow.txt")), extra)
 
     @classmethod
-    def load_refreshed(cls, store: Cache) -> DisposableLists:
+    def load_refreshed(cls, store: Cache, *, strict: bool = False) -> DisposableLists:
         """Bundled snapshot merged with the lists saved by refresh_domain_lists, if any."""
-        lists = cls.load_bundled()
+        lists = cls.load_bundled(strict=strict)
         return lists.merge(
-            _stored_domains(store, _KEY_DISPOSABLE), _stored_domains(store, _KEY_ALLOW)
+            _stored_domains(store, _KEY_DISPOSABLE),
+            _stored_domains(store, _KEY_ALLOW),
+            _stored_domains(store, _KEY_STRICT) if strict else (),
         )
 
     def disposable(self) -> frozenset[str]:
@@ -420,23 +440,53 @@ class DisposableLists:
     def allow(self) -> frozenset[str]:
         return self._allow
 
-    def is_disposable(self, domain: str) -> bool:
-        """True if domain or any parent domain is listed and no allow entry covers it."""
+    def strict(self) -> frozenset[str]:
+        """Domains listed only by the strict source (not in disposable(), not allowed)."""
+        return self._strict
+
+    def is_disposable(self, domain: str, *, strict: bool = False) -> bool:
+        """True if domain or any parent domain is listed and no allow entry covers it.
+
+        With strict=True the strict list is consulted as well.
+        """
         d = _clean(domain)
         if not d or d in _free_providers():
             return False
-        labels = d.split(".")
-        chain = [".".join(labels[i:]) for i in range(max(1, len(labels) - 1))]
-        if any(name in self._allow for name in chain):
-            return False
-        return any(name in self._disposable for name in chain)
+        return match_disposable(self, d, strict=strict) is not None
 
-    def merge(self, disposable: Iterable[str] = (), allow: Iterable[str] = ()) -> DisposableLists:
+    def merge(
+        self,
+        disposable: Iterable[str] = (),
+        allow: Iterable[str] = (),
+        strict: Iterable[str] = (),
+    ) -> DisposableLists:
         """Return a new instance with the extra entries added."""
         return DisposableLists(
             self._raw_disposable | _clean_all(disposable),
             self._allow | _clean_all(allow),
+            self._raw_strict | _clean_all(strict),
         )
+
+
+def match_disposable(lists: DomainLists, domain: str, *, strict: bool = False) -> str | None:
+    """Return "core" or "strict" for the list that flags domain, or None if it is not flagged.
+
+    The domain and each parent are checked; an allow entry anywhere in the chain wins. The strict
+    list is consulted only when strict is true and lists implements StrictDomainLists.
+    """
+    labels = domain.lower().rstrip(".").split(".")
+    chain = [".".join(labels[i:]) for i in range(max(1, len(labels) - 1))]
+    allow = lists.allow()
+    if any(name in allow for name in chain):
+        return None
+    disposable = lists.disposable()
+    if any(name in disposable for name in chain):
+        return "core"
+    if strict and isinstance(lists, StrictDomainLists):
+        extra = lists.strict()
+        if any(name in extra for name in chain):
+            return "strict"
+    return None
 
 
 # ---------------------------------------------------------------------------------------------
@@ -463,8 +513,13 @@ def _parse_source(text: str) -> tuple[frozenset[str], int, int]:
     return valid, len(entries), len(entries) - sum(1 for e in entries if _valid_hostname(e))
 
 
-def refresh_domain_lists(fetch: Callable[[str], str], store: Cache) -> RefreshReport:
+def refresh_domain_lists(
+    fetch: Callable[[str], str], store: Cache, *, strict: bool = False
+) -> RefreshReport:
     """Fetch upstream list sources via fetch(url) -> text and save the merged result in store.
+
+    The strict source (about 1.5 MB) is fetched only when strict is true; domains_added and
+    domains_total count the core disposable list only.
 
     The library itself never opens sockets here; the host supplies fetch. A source is rejected
     (and its previously stored copy kept) when the fetch fails, when it parses to nothing, when
@@ -474,7 +529,9 @@ def refresh_domain_lists(fetch: Callable[[str], str], store: Cache) -> RefreshRe
     errors: list[str] = []
     accepted = 0
     sets: dict[str, frozenset[str]] = {}
-    for name, url, _kind in _SOURCES:
+    for name, url, kind in _SOURCES:
+        if kind == "strict" and not strict:
+            continue
         key = f"{_KEY_PREFIX}source:{name}"
         previous = _stored_domains(store, key)
         try:
@@ -511,6 +568,9 @@ def refresh_domain_lists(fetch: Callable[[str], str], store: Cache) -> RefreshRe
     merged = (sets["primary"] | sets["fakefilter"]) - allow - _free_providers()
     store.set(_KEY_DISPOSABLE, {"domains": sorted(merged)}, _STORE_TTL)
     store.set(_KEY_ALLOW, {"domains": sorted(allow)}, _STORE_TTL)
+    if strict:
+        extra = sets["strict"] - merged - allow - _free_providers()
+        store.set(_KEY_STRICT, {"domains": sorted(extra)}, _STORE_TTL)
     return RefreshReport(accepted, len(merged - previous_merged), len(merged), tuple(errors))
 
 
@@ -520,6 +580,7 @@ __all__ = [
     "gibberish_score",
     "is_free_provider",
     "is_role",
+    "match_disposable",
     "refresh_domain_lists",
     "suggest_domain",
 ]

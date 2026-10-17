@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from prebounce.settings import ProxyConfig
@@ -49,6 +49,15 @@ class DomainLists(Protocol):
 
     def allow(self) -> frozenset[str]:
         """Domains that must never be treated as disposable."""
+        ...
+
+
+@runtime_checkable
+class StrictDomainLists(DomainLists, Protocol):
+    """DomainLists with the opt-in strict list, consulted only when strict_disposable is on."""
+
+    def strict(self) -> frozenset[str]:
+        """Extra suspect domains: larger list, more false positives than disposable()."""
         ...
 
 

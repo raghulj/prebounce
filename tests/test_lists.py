@@ -18,6 +18,7 @@ from prebounce.lists import (
     gibberish_score,
     is_free_provider,
     is_role,
+    match_disposable,
     refresh_domain_lists,
     suggest_domain,
 )
@@ -229,9 +230,67 @@ def test_bundled_comments_are_stripped() -> None:
     assert not any(d.startswith("#") or " " in d for d in dl.disposable() | dl.allow())
 
 
+# ---------------------------------------------------------------- strict list
+
+# Listed upstream by disposable/disposable-email-domains only, not by the core lists.
+STRICT_ONLY = "ubermail39.info"
+
+
+def test_strict_list_is_separate_and_opt_in() -> None:
+    dl = DisposableLists(disposable=["core.example"], allow=["ok.example"], strict=["s.example"])
+    assert dl.strict() == frozenset({"s.example"})
+    assert not dl.is_disposable("s.example")
+    assert dl.is_disposable("s.example", strict=True)
+    assert dl.is_disposable("x.s.example", strict=True)
+    assert match_disposable(dl, "core.example", strict=True) == "core"
+    assert match_disposable(dl, "s.example", strict=True) == "strict"
+    assert match_disposable(dl, "s.example") is None
+
+
+def test_strict_list_excludes_core_allow_and_free() -> None:
+    dl = DisposableLists(
+        disposable=["core.example"],
+        allow=["ok.example"],
+        strict=["core.example", "ok.example", "gmail.com", "s.example"],
+    )
+    assert dl.strict() == frozenset({"s.example"})
+    assert not dl.is_disposable("gmail.com", strict=True)
+    assert not dl.is_disposable("ok.example", strict=True)
+
+
+def test_strict_allow_on_parent_wins() -> None:
+    dl = DisposableLists(allow=["s.example"], strict=["x.s.example"])
+    assert match_disposable(dl, "x.s.example", strict=True) is None
+
+
+def test_match_disposable_ignores_strict_for_plain_domain_lists() -> None:
+    class Plain:
+        def disposable(self) -> frozenset[str]:
+            return frozenset({"core.example"})
+
+        def allow(self) -> frozenset[str]:
+            return frozenset()
+
+    assert match_disposable(Plain(), "core.example", strict=True) == "core"
+    assert match_disposable(Plain(), "s.example", strict=True) is None
+
+
+def test_bundled_strict_list_loads_only_on_request() -> None:
+    assert DisposableLists.load_bundled().strict() == frozenset()
+    dl = DisposableLists.load_bundled(strict=True)
+    assert len(dl.strict()) > 50000
+    assert STRICT_ONLY in dl.strict()
+    assert not dl.is_disposable(STRICT_ONLY)
+    assert dl.is_disposable(STRICT_ONLY, strict=True)
+    for provider in ("gmail.com", "outlook.com", "hotmail.com", "yahoo.com", "icloud.com"):
+        assert not dl.is_disposable(provider, strict=True)
+    assert not (dl.strict() & (dl.disposable() | dl.allow() | lists._free_providers()))
+
+
 # ---------------------------------------------------------------- refresh
 
 URLS = [source[1] for source in lists._SOURCES]
+STRICT_URL = URLS[3]
 
 
 def _fake_fetch(texts: dict[str, str]) -> Any:
@@ -350,3 +409,46 @@ def test_refresh_all_failing_writes_nothing() -> None:
     assert report.domains_total == 0
     assert len(report.errors) == 3
     assert len(store) == 0
+
+
+def test_refresh_skips_strict_source_by_default() -> None:
+    store = MemoryCache()
+    fetched: list[str] = []
+    fetch = _fake_fetch(_good_texts())
+
+    def recording(url: str) -> str:
+        fetched.append(url)
+        return str(fetch(url))
+
+    refresh_domain_lists(recording, store)
+    assert STRICT_URL not in fetched
+    assert store.get("prebounce:lists:v1:strict") is None
+
+
+def test_refresh_with_strict_stores_strict_only_domains() -> None:
+    store = MemoryCache()
+    texts = _good_texts()
+    texts[STRICT_URL] = _domains("s", 100) + "p1.example\np0.example\ngmail.com\n"
+    report = refresh_domain_lists(_fake_fetch(texts), store, strict=True)
+    assert report.source_count == 4
+    assert report.domains_total == 199  # strict domains are not counted
+    stored = store.get("prebounce:lists:v1:strict")
+    assert stored is not None
+    assert len(stored["domains"]) == 100
+    assert "p1.example" not in stored["domains"]  # already core
+    assert "p0.example" not in stored["domains"]  # allowed
+    dl = DisposableLists.load_refreshed(store, strict=True)
+    assert dl.is_disposable("s5.example", strict=True)
+    assert not DisposableLists.load_refreshed(store).is_disposable("s5.example", strict=True)
+
+
+def test_refresh_strict_failure_keeps_previous_strict_list() -> None:
+    store = MemoryCache()
+    texts = _good_texts()
+    texts[STRICT_URL] = _domains("s", 100)
+    refresh_domain_lists(_fake_fetch(texts), store, strict=True)
+    del texts[STRICT_URL]
+    report = refresh_domain_lists(_fake_fetch(texts), store, strict=True)
+    assert any("strict" in e and "fetch failed" in e for e in report.errors)
+    stored = store.get("prebounce:lists:v1:strict")
+    assert stored is not None and len(stored["domains"]) == 100

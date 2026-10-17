@@ -2,8 +2,7 @@
 
 All settings below are accepted and validated. Those for mailbox probing (`SMTP_*`, `PROBE_TIMEOUT`,
 `MAX_GREYLIST_ATTEMPTS`, `GREYLIST_DELAY_SECONDS`, `CATCH_ALL_CHECK`) have no effect until probing
-is implemented. `STRICT_DISPOSABLE` is accepted but not yet wired: a disposable domain is always
-treated as disposable. A `PROBE_AGENT_URL` setting does not exist yet.
+is implemented. A `PROBE_AGENT_URL` setting does not exist yet.
 
 Settings are read with `Settings.from_env()` (variables carry the prefix `PREBOUNCE_`, for
 example `PREBOUNCE_DNS_ENABLED=true`) or built as `Settings(...)` and passed to
@@ -19,7 +18,7 @@ example `PREBOUNCE_DNS_ENABLED=true`) or built as `Settings(...)` and passed to
 | `MAX_GREYLIST_ATTEMPTS`, `GREYLIST_DELAY_SECONDS` | Greylist retry budget (default 3 attempts, 330 s) |
 | `BLOCKLIST_ZONES` | Comma-separated DNS blocklist zones (needs `DNS_ENABLED`) |
 | `CACHE_TTL` | JSON object overriding per-verdict TTLs in seconds: `deliverable`, `undeliverable`, `risky`, `unknown`, `domain` |
-| `STRICT_DISPOSABLE` | Not yet wired. Intended: treat unlisted-but-suspect domains as disposable |
+| `STRICT_DISPOSABLE` | Also check the larger strict list (about 96,000 domains). A domain only that list flags is undeliverable with `medium` confidence instead of `high`. See [disposable domains](disposable-domains.md#strict-mode) |
 | `CATCH_ALL_CHECK` | Also test a random address to detect accept-all domains |
 
 ## Host callbacks
